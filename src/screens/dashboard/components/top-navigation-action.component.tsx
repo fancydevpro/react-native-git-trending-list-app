@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { TouchableOpacity, TouchableOpacityProps, ImageProps } from 'react-native';
 
 import { RenderProp } from '../../../model';
@@ -9,9 +9,20 @@ export interface TopNaivgationActionProps extends TouchableOpacityProps {
 
 export type TopNavigationActionElement = React.ReactElement<TopNaivgationActionProps>;
 
-export const TopNavigationAction: React.FC<TopNaivgationActionProps> = ({
-  icon,
-  ...props
-}) => {
-  return <TouchableOpacity {...props}>{!!icon && icon()}</TouchableOpacity>;
+export type TopNavigationActionRef = TouchableOpacity;
+
+const TopNavigationActionFC = (
+  { icon, ...props }: TopNaivgationActionProps,
+  ref: React.Ref<TopNavigationActionRef>,
+) => {
+  return (
+    <TouchableOpacity {...props} style={{ borderWidth: 1 }} ref={ref}>
+      {!!icon && icon()}
+    </TouchableOpacity>
+  );
 };
+
+export const TopNavigationAction = forwardRef<
+  TopNavigationActionRef,
+  TopNaivgationActionProps
+>(TopNavigationActionFC);
