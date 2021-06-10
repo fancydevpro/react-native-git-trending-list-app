@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import {
   Image,
   FlatList,
@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
-import { get, unionBy, debounce } from 'lodash';
+import { get, unionBy, throttle } from 'lodash';
 
 import { RootStackParamList } from '../../../types';
 import { SafeAreaLayout } from '../../components/safe-area-layout.component';
@@ -17,9 +17,12 @@ import { TopNavigation } from './components/top-navigation.component';
 import {
   TopNavigationAction,
   TopNavigationActionElement,
+  TopNavigationActionRef,
 } from './components/top-navigation-action.component';
 import { Loader } from './components/loader.component';
 import { RepositoryItem } from './components/repository-item.component';
+import { Menu } from './components/menu.component';
+import { MenuItem } from './components/menu-item.component';
 import { PageInfo, RepositoryModel } from '../../model';
 import { apiGetRepositories } from '../../services/api.service';
 import { LanguageColors } from '../../constants';
@@ -36,10 +39,12 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
     pageSize: 10,
     page: 1,
     sort: 'stars',
+    order: 'desc',
   });
+  const moreButtonRef = useRef<TopNavigationActionRef>(null);
 
   const showErrorMessage = useCallback((error) => {
-    Alert.alert('Load Failed', error.message);
+    // Alert.alert('Load Failed', error.message);
   }, []);
 
   const loadRepositories = useCallback(
@@ -86,6 +91,38 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
     setShowingMoreMenu((prevState) => !prevState);
   }, []);
 
+  const hideMenu = useCallback((): void => {
+    setShowingMoreMenu(false);
+  }, []);
+
+  const onSortByStars = useCallback(async (): Promise<void> => {
+    hideMenu();
+    if (pageInfo.sort !== 'stars') {
+      const newPageInfo: PageInfo = {
+        ...pageInfo,
+        sort: 'stars',
+        order: 'desc',
+      };
+      setData([]);
+      setLoadMore(true);
+      await loadRepositories(newPageInfo);
+    }
+  }, [hideMenu, pageInfo]);
+
+  const onSortByName = useCallback(async (): Promise<void> => {
+    hideMenu();
+    if (pageInfo.sort !== 'name') {
+      const newPageInfo: PageInfo = {
+        ...pageInfo,
+        sort: 'name',
+        order: 'asc',
+      };
+      setData([]);
+      setLoadMore(true);
+      await loadRepositories(newPageInfo);
+    }
+  }, [hideMenu, pageInfo]);
+
   const onRefresh = useMemo(() => {
     const refresh = async (): Promise<void> => {
       if (refreshing || loading) {
@@ -106,7 +143,7 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
       setRefreshing(false);
     };
 
-    return debounce(refresh, 300);
+    return throttle(refresh, 800);
   }, [refreshing, loading, pageInfo, loadRepositories]);
 
   const onEndReached = useMemo(() => {
@@ -121,12 +158,13 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
       });
     };
 
-    return debounce(loadMore, 300);
+    return throttle(loadMore, 800);
   }, [loading, canLoadMore, pageInfo, loadRepositories]);
 
   const renderMoreAction = useCallback(
     (): TopNavigationActionElement => (
       <TopNavigationAction
+        ref={moreButtonRef}
         icon={() => (
           <Image
             source={require('../../../assets/images/more-black-24.png')}
@@ -174,6 +212,18 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
         onEndReached={onEndReached}
         keyExtractor={(item: RepositoryModel) => `${item.id}`}
       />
+      <Menu anchor={moreButtonRef} show={showingMoreMenu} onTapOutside={hideMenu}>
+        <MenuItem
+          title='Sort by stars'
+          active={pageInfo.sort === 'stars'}
+          onPress={onSortByStars}
+        />
+        <MenuItem
+          title='Sort by name'
+          active={pageInfo.sort === 'name'}
+          onPress={onSortByName}
+        />
+      </Menu>
     </SafeAreaLayout>
   );
 };
