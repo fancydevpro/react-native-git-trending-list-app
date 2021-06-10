@@ -3,7 +3,6 @@ export interface RepositoryModel {
   avatar: string;
   owner: string;
   name: string;
-  extended?: boolean;
   description?: string;
   language?: string;
   languageColor?: string;

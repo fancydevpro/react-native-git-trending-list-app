@@ -6,6 +6,9 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  LayoutAnimation,
+  UIManager,
+  Platform,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { get, unionBy, throttle } from 'lodash';
@@ -29,6 +32,10 @@ import { LanguageColors } from '../../constants';
 
 export type DashboardScreenRouteProp = StackScreenProps<RootStackParamList, 'Dashboard'>;
 
+if (Platform.OS === 'android') {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -41,10 +48,14 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
     sort: 'stars',
     order: 'desc',
   });
+  const [expandedItemId, setExpandedItemId] = useState<number>();
   const moreButtonRef = useRef<TopNavigationActionRef>(null);
 
   const showErrorMessage = useCallback((error) => {
-    // Alert.alert('Load Failed', error.message);
+    Alert.alert('Load Failed', get(error, 'response.data.message', error.message));
+    if (__DEV__) {
+      console.log('error: ', error.response);
+    }
   }, []);
 
   const loadRepositories = useCallback(
@@ -75,7 +86,6 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
         }
       } catch (error) {
         showErrorMessage(error);
-        console.log('error: ', error.response);
       }
 
       setLoading(false);
@@ -179,33 +189,39 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
   );
 
   const renderItem = useCallback(
-    ({ item }: ListRenderItemInfo<RepositoryModel>) => <RepositoryItem {...item} />,
-    [],
+    ({ item }: ListRenderItemInfo<RepositoryModel>) => (
+      <RepositoryItem
+        {...item}
+        expanded={item.id === expandedItemId}
+        onPress={() => {
+          LayoutAnimation.configureNext({
+            ...LayoutAnimation.Presets.easeInEaseOut,
+            duration: 200,
+          });
+          setExpandedItemId((prevId) => (prevId === item.id ? undefined : item.id));
+        }}
+      />
+    ),
+    [expandedItemId],
   );
 
-  const renderItemSeparator = useCallback(() => <Divider />, []);
-
   const ListFooterComponent = useMemo(
-    () => (
-      <>
-        <Divider />
-        {loading && <ActivityIndicator size='small' style={styles.bottomLoader} />}
-      </>
-    ),
+    () =>
+      loading ? <ActivityIndicator size='small' style={styles.bottomLoader} /> : null,
     [loading],
   );
 
   return (
     <SafeAreaLayout style={styles.container} insets='top'>
-      <TopNavigation title='Repository' accessoryRight={renderMoreAction} />
+      <TopNavigation title='Trending' accessoryRight={renderMoreAction} />
       <Divider />
       <FlatList
         contentContainerStyle={styles.listContentContainer}
         data={data}
         renderItem={renderItem}
-        ItemSeparatorComponent={renderItemSeparator}
         ListFooterComponent={ListFooterComponent}
         ListEmptyComponent={<Loader />}
+        scrollEnabled={data.length > 0}
         onRefresh={onRefresh}
         refreshing={refreshing}
         onEndReachedThreshold={0.5}
@@ -231,6 +247,7 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#ffffff',
   },
   moreIcon: {
     height: 24,
