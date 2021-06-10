@@ -16,7 +16,7 @@ const TopNavigationActionFC = (
   ref: React.Ref<TopNavigationActionRef>,
 ) => {
   return (
-    <TouchableOpacity {...props} style={{ borderWidth: 1 }} ref={ref}>
+    <TouchableOpacity {...props} ref={ref}>
       {!!icon && icon()}
     </TouchableOpacity>
   );
