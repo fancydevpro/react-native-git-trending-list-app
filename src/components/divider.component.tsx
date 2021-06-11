@@ -14,7 +14,7 @@ export const Divider: React.FC<DividerProps> = ({ size, color, style }) => {
       height: size,
       backgroundColor: color,
     }),
-    [size, color],
+    [size, color, style],
   );
 
   return <View style={dividerStyle} />;

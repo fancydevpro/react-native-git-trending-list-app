@@ -13,10 +13,11 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
   title,
   accessoryLeft,
   accessoryRight,
+  style,
   ...props
 }) => {
   return (
-    <View style={styles.container}>
+    <View {...props} style={[styles.container, style]}>
       <View style={styles.accessoryContainer}>{!!accessoryLeft && accessoryLeft()}</View>
       <Text style={styles.title}>{title}</Text>
       <View style={[styles.accessoryContainer, styles.accessoryRightContainer]}>

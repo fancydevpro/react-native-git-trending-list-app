@@ -21,41 +21,41 @@ export const NoInternet: React.FC<NoInternetProps> = ({ onRetry }) => {
   useEffect(() => {
     const removeNetInfoSubscription = NetInfo.addEventListener((state) => {
       if (typeof state.isInternetReachable === 'boolean') {
-        const offline = !(state.isConnected && state.isInternetReachable);
+        const isOffline = !(state.isConnected && state.isInternetReachable);
         setOffline((prevState) => {
-          if ((!prevState && offline) || (prevState && !offline)) {
+          if ((!prevState && isOffline) || (prevState && !isOffline)) {
             LayoutAnimation.configureNext({
               ...LayoutAnimation.Presets.linear,
               duration: 200,
             });
           }
-          if (prevState && !offline && onRetry) {
+          if (prevState && !isOffline && onRetry) {
             onRetry();
           }
-          return offline;
+          return isOffline;
         });
       }
     });
 
     return () => removeNetInfoSubscription();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onRetryWithOfflineCheck = useCallback(async (): Promise<void> => {
     const state = await NetInfo.fetch();
-    const offline = !(state.isConnected && state.isInternetReachable);
+    const isOffline = !(state.isConnected && state.isInternetReachable);
     setOffline((prevState) => {
-      if ((!prevState && offline) || (prevState && !offline)) {
+      if ((!prevState && isOffline) || (prevState && !isOffline)) {
         LayoutAnimation.configureNext({
           ...LayoutAnimation.Presets.linear,
           duration: 200,
         });
       }
-      if (prevState && !offline && onRetry) {
+      if (prevState && !isOffline && onRetry) {
         onRetry();
       }
-      return offline;
+      return isOffline;
     });
-  }, []);
+  }, [onRetry]);
 
   if (!offline) {
     return null;

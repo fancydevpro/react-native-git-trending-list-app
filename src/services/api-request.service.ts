@@ -15,7 +15,6 @@ export function setApiTimeout(timeout: number): void {
 export function ApiRequest<T>(
   url: string,
   method: Method = 'get',
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   { params, data, headers }: { params?: any; data?: any; headers?: any } = {},
 ): Promise<AxiosResponse<T>> {
   return apiInstance.request({ url, method, params, data, headers });

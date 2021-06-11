@@ -29,7 +29,7 @@ export const Menu: React.FC<MenuProps> = ({
         right: Dimensions.get('window').width - pageX - width,
       });
     });
-  }, [show, anchor.current]);
+  }, [show, anchor]);
 
   return (
     <TouchableWithoutFeedback onPress={onTapOutside}>

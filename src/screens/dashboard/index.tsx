@@ -109,7 +109,7 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
 
   useEffect(() => {
     loadRepositories(pageInfo);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onMoreButton = useCallback((): void => {
     setShowingMoreMenu((prevState) => !prevState);
@@ -131,7 +131,7 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
       setLoadMore(true);
       await loadRepositories(newPageInfo);
     }
-  }, [hideMenu, pageInfo]);
+  }, [hideMenu, loadRepositories, pageInfo]);
 
   const onSortByName = useCallback(async (): Promise<void> => {
     hideMenu();
@@ -145,7 +145,7 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
       setLoadMore(true);
       await loadRepositories(newPageInfo);
     }
-  }, [hideMenu, pageInfo]);
+  }, [hideMenu, loadRepositories, pageInfo]);
 
   const onRefresh = useMemo(() => {
     const refresh = async (): Promise<void> => {
@@ -211,7 +211,7 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
         onPress={onMoreButton}
       />
     ),
-    [],
+    [onMoreButton],
   );
 
   const renderItem = useCallback(
