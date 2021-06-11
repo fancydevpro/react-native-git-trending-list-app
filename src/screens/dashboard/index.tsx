@@ -9,6 +9,7 @@ import {
   LayoutAnimation,
   UIManager,
   Platform,
+  View,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { get, unionBy, throttle } from 'lodash';
@@ -26,6 +27,7 @@ import { Loader } from './components/loader.component';
 import { RepositoryItem } from './components/repository-item.component';
 import { Menu } from './components/menu.component';
 import { MenuItem } from './components/menu-item.component';
+import { NoInternet } from './components/no-internet.component';
 import { PageInfo, RepositoryModel } from '../../model';
 import { apiGetRepositories } from '../../services/api.service';
 import { LanguageColors } from '../../constants';
@@ -41,6 +43,7 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [canLoadMore, setLoadMore] = useState(true);
   const [showingMoreMenu, setShowingMoreMenu] = useState(false);
+  const [showingError, setShowingError] = useState(false);
   const [data, setData] = useState<RepositoryModel[]>([]);
   const [pageInfo, setPageInfo] = useState<PageInfo>({
     pageSize: 10,
@@ -51,12 +54,23 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
   const [expandedItemId, setExpandedItemId] = useState<number>();
   const moreButtonRef = useRef<TopNavigationActionRef>(null);
 
-  const showErrorMessage = useCallback((error) => {
-    Alert.alert('Load Failed', get(error, 'response.data.message', error.message));
-    if (__DEV__) {
-      console.log('error: ', error.response);
-    }
-  }, []);
+  const showErrorMessage = useCallback(
+    (error) => {
+      if (error.response && !showingError) {
+        setShowingError(true);
+        Alert.alert('Load Failed', get(error, 'response.data.message', error.message), [
+          {
+            text: 'OK',
+            onPress: () => setShowingError(false),
+          },
+        ]);
+      }
+      if (__DEV__) {
+        console.log('error: ', error.response);
+      }
+    },
+    [showingError],
+  );
 
   const loadRepositories = useCallback(
     async (pInfo: PageInfo): Promise<void> => {
@@ -171,6 +185,18 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
     return throttle(loadMore, 800);
   }, [loading, canLoadMore, pageInfo, loadRepositories]);
 
+  const onRetry = useMemo(() => {
+    const load = async (): Promise<void> => {
+      if (loading || !canLoadMore) {
+        return;
+      }
+
+      await loadRepositories(pageInfo);
+    };
+
+    return throttle(load, 800) as () => Promise<void>;
+  }, [loading, canLoadMore, pageInfo, loadRepositories]);
+
   const renderMoreAction = useCallback(
     (): TopNavigationActionElement => (
       <TopNavigationAction
@@ -215,19 +241,22 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
     <SafeAreaLayout style={styles.container} insets='top'>
       <TopNavigation title='Trending' accessoryRight={renderMoreAction} />
       <Divider />
-      <FlatList
-        contentContainerStyle={styles.listContentContainer}
-        data={data}
-        renderItem={renderItem}
-        ListFooterComponent={ListFooterComponent}
-        ListEmptyComponent={<Loader />}
-        scrollEnabled={data.length > 0}
-        onRefresh={onRefresh}
-        refreshing={refreshing}
-        onEndReachedThreshold={0.5}
-        onEndReached={onEndReached}
-        keyExtractor={(item: RepositoryModel) => `${item.id}`}
-      />
+      <View style={styles.container}>
+        <FlatList
+          contentContainerStyle={styles.listContentContainer}
+          data={data}
+          renderItem={renderItem}
+          ListFooterComponent={ListFooterComponent}
+          ListEmptyComponent={<Loader />}
+          scrollEnabled={data.length > 0}
+          onRefresh={onRefresh}
+          refreshing={refreshing}
+          onEndReachedThreshold={0.5}
+          onEndReached={onEndReached}
+          keyExtractor={(item: RepositoryModel) => `${item.id}`}
+        />
+        <NoInternet onRetry={onRetry} />
+      </View>
       <Menu anchor={moreButtonRef} show={showingMoreMenu} onTapOutside={hideMenu}>
         <MenuItem
           title='Sort by stars'
