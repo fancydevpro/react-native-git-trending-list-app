@@ -47,7 +47,6 @@ export const Menu: React.FC<MenuProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    borderWidth: 1,
   },
   container: {
     position: 'absolute',
