@@ -1,7 +1,13 @@
 import { ApiRequest } from './api-request.service';
 import { PageInfo } from '../model';
 
-export async function apiGetRepositories({ pageSize, page, sort, order }: PageInfo) {
+export async function apiGetRepositories({
+  pageSize,
+  page,
+  sort,
+  order,
+  query,
+}: PageInfo) {
   const { data } = await ApiRequest<{
     items: {
       id: number;
@@ -17,7 +23,7 @@ export async function apiGetRepositories({ pageSize, page, sort, order }: PageIn
     }[];
   }>('/search/repositories', 'GET', {
     params: {
-      q: 'trending',
+      q: query,
       per_page: pageSize,
       sort,
       order,
