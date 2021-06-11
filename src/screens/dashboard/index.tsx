@@ -46,7 +46,7 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
   const [showingError, setShowingError] = useState(false);
   const [data, setData] = useState<RepositoryModel[]>([]);
   const [pageInfo, setPageInfo] = useState<PageInfo>({
-    pageSize: 10,
+    pageSize: 15,
     page: 1,
     sort: 'stars',
     order: 'desc',
@@ -248,7 +248,7 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
           renderItem={renderItem}
           ListFooterComponent={ListFooterComponent}
           ListEmptyComponent={<Loader />}
-          scrollEnabled={data.length > 0}
+          scrollEnabled={data.length > 0 || !loading}
           onRefresh={onRefresh}
           refreshing={refreshing}
           onEndReachedThreshold={0.5}
