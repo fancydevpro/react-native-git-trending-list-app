@@ -50,6 +50,7 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
     page: 1,
     sort: 'stars',
     order: 'desc',
+    query: 'trending',
   });
   const [expandedItemId, setExpandedItemId] = useState<number>();
   const moreButtonRef = useRef<TopNavigationActionRef>(null);
@@ -208,6 +209,8 @@ const DashboardScreen: React.FC<DashboardScreenRouteProp> = () => {
             resizeMode='center'
           />
         )}
+        hitSlop={{ left: 16, right: 16 }}
+        style={styles.moreButton}
         onPress={onMoreButton}
       />
     ),
@@ -277,6 +280,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  moreButton: {
+    opacity: 1, // To make measure() method work on Android
   },
   moreIcon: {
     height: 24,

@@ -37,6 +37,7 @@ const styles = StyleSheet.create({
     paddingLeft: PADDING_LEFT,
     paddingRight: PADDING_RIGHT,
     paddingVertical: LOADER_PADDING_VERTICAL,
+    backgroundColor: '#ffffff',
   },
   loader: {
     height: LOADER_AVATAR_SIZE,

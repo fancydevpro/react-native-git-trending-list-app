@@ -24,10 +24,12 @@ export const Menu: React.FC<MenuProps> = ({
 
   useEffect(() => {
     anchor.current?.measure((x, y, width, height, pageX, pageY) => {
-      setMenuPosition({
-        top: pageY + height,
-        right: Dimensions.get('window').width - pageX - width,
-      });
+      if (pageX !== undefined && pageY !== undefined && width !== undefined) {
+        setMenuPosition({
+          top: pageY + height,
+          right: Dimensions.get('window').width - pageX - width,
+        });
+      }
     });
   }, [show, anchor]);
 
